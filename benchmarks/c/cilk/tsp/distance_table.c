@@ -73,7 +73,7 @@ DistanceTable *distance_table_generate(int ntowns, int seed) {
     if (!dt) return NULL;
 
     char filename[256];
-    snprintf(filename, sizeof(filename), "../../data/dist_tab_%d_%d.txt", ntowns, seed);
+    snprintf(filename, sizeof(filename), "../data/dist_tab_%d_%d.txt", ntowns, seed);
     Coord *towns = read_towns_from_file(filename, ntowns);
     if (!towns){
         free(dt);

@@ -6,7 +6,7 @@ LDFLAGS = -lm -lpthread -ldl
 RUST_LIB_DIR = ../../sort_rs/target/release
 RUST_LIB = sort_rs
 
-TARGET = ../zout/sort
+TARGET = ../../zout/sort_omp
 SRC = sort.c
 
 all: $(TARGET)

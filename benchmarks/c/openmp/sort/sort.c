@@ -22,7 +22,7 @@ const int DIRECT_THRESHOLD = 2097152;
 
 int load_arr(int32_t *arr, int n, int seed, int check) {
     char filename[256];
-    snprintf(filename, sizeof(filename), "../../data/sort_arr_%d_%d.bin", n, seed);
+    snprintf(filename, sizeof(filename), "../data/sort_arr_%d_%d.bin", n, seed);
 
     FILE *f = fopen(filename, "rb");
     if (!f) {
