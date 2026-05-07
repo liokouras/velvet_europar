@@ -1,0 +1,4 @@
+Detected 128 physical cores
+ADAPINT benchmark. Saving logs to /local/badia/velvet_europar/benchmarks/output/out_20260507_200305/adapint.csv
+running ADAPINT serial Rust
+running ADAPINT rayon

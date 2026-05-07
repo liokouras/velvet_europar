@@ -127,9 +127,6 @@ fn main() {
     if app.eq("velvet") {
         #[cfg(not(feature = "test_direct_rec"))]
         velvet_par_merge_glob_main(arr, seed);
-    } else if app.eq("velvet_unsafe") {
-        #[cfg(not(feature = "test_direct_rec"))]
-        velvet_par_merge_unsafe_main(arr, seed);
     } else if app.eq("par_seq") {
         // pin thread!
         let core_ids = core_affinity::get_core_ids().unwrap();
@@ -138,14 +135,6 @@ fn main() {
             eprintln!("Could not pin Root thread id continuing without pinning...");
         } 
         par_merge_seq_glob_main(arr, seed);
-    } else if app.eq("par_seq_unsafe") {
-        // pin thread!
-        let core_ids = core_affinity::get_core_ids().unwrap();
-        let res = core_affinity::set_for_current(core_ids[0]);
-        if !res {
-            eprintln!("Could not pin Root thread id continuing without pinning...");
-        } 
-        par_merge_unsafe_seq_main(arr, seed);
     } else if app.eq("rayon") {
         #[cfg(feature = "rayon")]
         {
@@ -160,7 +149,7 @@ fn main() {
         }
         #[cfg(not (feature = "rayon"))]
         println!("COMPILE WITH RAYON!");
-    } else if app.eq("test_direct_safe") {
+    } else if app.eq("test_direct") {
         #[cfg(feature = "test_direct_rec")]
         {
             if args.len() < 5 {
@@ -169,18 +158,6 @@ fn main() {
             }
             let num_workers: usize = args[4].parse().unwrap();
             test_direct_recursion(arr, seed, num_workers);
-        }
-        #[cfg(not(feature = "test_direct_rec"))]
-        println!("Compile with feature \"test_direct_rec\"");
-    } else if app.eq("test_direct_unsafe") {
-        #[cfg(feature = "test_direct_rec")]
-        {
-            if args.len() < 5 {
-                println!("must provide number of workers!");
-                return;
-            }
-            let num_workers: usize = args[4].parse().unwrap();
-            test_direct_recursion_unsafe(arr, seed, num_workers);
         }
         #[cfg(not(feature = "test_direct_rec"))]
         println!("Compile with feature \"test_direct_rec\"");
@@ -202,7 +179,7 @@ fn main() {
             writer.write_all(bytes).unwrap();
         }
         writer.flush().unwrap();
-        println!("wrote array to {}", filename);
+        eprintln!("wrote array to {}", filename);
 
         let md = fs::metadata(&filename);
         match md {
@@ -264,37 +241,6 @@ fn velvet_par_merge_glob_main(arr: Vec<i32>, seed: usize) {
     _check(sorted);
 }
 
-#[cfg(not(feature = "test_direct_rec"))]
-#[velvet_main(spawn_sort_unsafe)]
-fn velvet_par_merge_unsafe_main(arr: Vec<i32>, seed: usize) {
-    let n = arr.len();
-
-    let vec = MutBuf::new(n);
-    let buf = MutBuf::new(n);
-
-    for i in 0..n{
-        vec.write(i, arr[i]);
-        buf.write(i, 0);
-    }
-
-    par_merge::VEC_UNSAFE.set(vec).unwrap();
-    par_merge::BUF_UNSAFE.set(buf).unwrap();
-
-    let start = Instant::now();
-    par_merge::spawn_sort_unsafe(0, n, true);
-    let end = start.elapsed();
-    
-    let version = match velvet_get_queue_name().as_str() {
-        "safe" => 3,
-        "unsafe" => 27,
-        "crossbeam" => 28,
-        _ => -10,
-    };
-    println!("{},{},{},{},{},{}", version, velvet_get_num_workers(), DIRECT_THRESHOLD, arr.len(), seed, end.as_secs_f32());
-    let sorted = par_merge::VEC_UNSAFE.get().unwrap().as_slice(0, n).to_vec();
-    _check(sorted);
-}
-
 fn par_merge_seq_glob_main(arr: Vec<i32>, seed: usize) {
     let len = arr.len();
     
@@ -312,28 +258,6 @@ fn par_merge_seq_glob_main(arr: Vec<i32>, seed: usize) {
     println!("-1,1,{},{},{},{}", DIRECT_THRESHOLD, len, seed, end.as_secs_f32());
     let sorted: Vec<i32> = par_merge::VEC_SORTED.get().unwrap().iter().map(|x| x.load(std::sync::atomic::Ordering::Relaxed) as i32).collect();
     _check(sorted);
-}
-
-fn par_merge_unsafe_seq_main(arr: Vec<i32>, seed: usize) {
-    let n = arr.len();
-
-    let vec = MutBuf::new(n);
-    let buf = MutBuf::new(n);
-
-    for i in 0..n{
-        vec.write(i, arr[i]);
-        buf.write(i, 0);
-    }
-
-    par_merge::VEC_UNSAFE.set(vec).unwrap();
-    par_merge::BUF_UNSAFE.set(buf).unwrap();
-
-    let start = Instant::now();
-    par_merge::sort_unsafe(0, n, true);
-    let end = start.elapsed();
-    
-    println!("-2,1,{},{},{},{}", DIRECT_THRESHOLD, arr.len(), seed, end.as_secs_f32());
-    _check(par_merge::VEC_UNSAFE.get().unwrap().as_slice(0, n).to_vec());
 }
 
 #[cfg(feature = "rayon")]
@@ -391,89 +315,13 @@ fn test_direct_recursion(arr: Vec<i32>, seed: usize, num_workers: usize){
     _check(sorted);
 }
 
-#[cfg(feature = "test_direct_rec")]
-fn test_direct_recursion_unsafe(arr: Vec<i32>, seed: usize, num_workers: usize){
-    // velvet_par_merge_unsafe_main
-    let mut __root__worker__ = velvet::VelvetWorker::prepare_workers(num_workers, 64, __velvet_steal__);
-    __root__worker__.wait();
-    let n = arr.len();
-    let vec = MutBuf::new(n);
-    let buf = MutBuf::new(n);
-    for i in 0..n {
-        vec.write(i, arr[i]);
-        buf.write(i, 0);
-    }
-    par_merge::VEC_UNSAFE.set(vec).unwrap();
-    par_merge::BUF_UNSAFE.set(buf).unwrap();
-    let start = Instant::now();
-    par_merge::spawn_sort_unsafe(&mut __root__worker__, 0, n, true);
-    let end = start.elapsed();
-
-    let version = 8;
-    println!("{},{},{},{},{},{}", version, num_workers, DIRECT_THRESHOLD, arr.len(), seed, end.as_secs_f32());
-    let sorted = par_merge::VEC_UNSAFE.get().unwrap().as_slice(0, n).to_vec();
-    _check(sorted);
-}
-
-
-
-// SIMPLE BUFFER TO ALLOW MUTABILITY
-use std::alloc::{alloc, dealloc, Layout};
-#[derive(Debug)]
-pub struct MutBuf {
-    ptr: *mut i32,
-    capacity: usize,
-}
-unsafe impl Send for MutBuf {}
-unsafe impl Sync for MutBuf {}
-
-impl MutBuf {
-    pub(crate) fn new(capacity: usize) -> Self {
-        assert!(capacity > 0);
-        let layout = Layout::array::<i32>(capacity).unwrap();
-        let ptr = unsafe { alloc(layout) as *mut i32 };
-        if ptr.is_null() {
-            panic!("Memory allocation failed");
-        }
-        Self { ptr, capacity }
-    }
-
-    pub(crate) fn write(&self, index: usize, value: i32) {
-        assert!(index < self.capacity);
-        unsafe { *self.ptr.add(index) = value; }
-    }
-
-    pub(crate) fn _read(&self, index: usize) -> i32 {
-        assert!(index < self.capacity);
-        unsafe { *self.ptr.add(index) }
-    }
-
-    pub(crate) fn as_mut_slice(&self, left: usize, right: usize) -> &mut [i32] {
-        unsafe { std::slice::from_raw_parts_mut(self.ptr.add(left), right-left) }
-    }
-
-    pub(crate) fn as_slice(&self, left: usize, right: usize) -> &[i32] {
-        unsafe { std::slice::from_raw_parts(self.ptr.add(left), right-left) }
-    }
-}
-
-impl Drop for MutBuf {
-    fn drop(&mut self) {
-        let layout = Layout::array::<i32>(self.capacity).unwrap();
-        unsafe {
-            dealloc(self.ptr as *mut u8, layout);
-        }
-    }
-}
 
 // ---------------------- FOR CHECKING EFFECT OF DIRECT RECURSION ----------
 #[cfg(feature = "test_direct_rec")]
 pub(crate) enum __Frame__ {
     Stolen(std::sync::Arc<std::sync::Mutex<Option<__Frame__>>>),
     InputSortParmergeGlobSpawn(usize, usize, usize, bool),
-    InputMergeParGlobSpawn(usize, (usize, usize), (usize, usize), (usize, usize), bool),
-    InputSpawnSortUnsafe(usize, usize, usize, bool),
-    InputSpawnMergeUnsafe(usize, (usize, usize), (usize, usize), (usize, usize), bool),
+    InputMergeParGlobSpawn(usize, (usize, usize), (usize, usize), (usize, usize), bool)
 }
 #[cfg(feature = "test_direct_rec")]
 impl velvet::Identifiable for __Frame__ {
@@ -482,12 +330,6 @@ impl velvet::Identifiable for __Frame__ {
             return *uid;
         }
         if let __Frame__::InputMergeParGlobSpawn(uid, ..) = self {
-            return *uid;
-        }
-        if let __Frame__::InputSpawnSortUnsafe(uid, ..) = self {
-            return *uid;
-        }
-        if let __Frame__::InputSpawnMergeUnsafe(uid, ..) = self {
             return *uid;
         }
         return 0;
@@ -510,14 +352,6 @@ fn __velvet_steal__(worker: &mut velvet::VelvetWorker<__Frame__>) {
                 }
                 __Frame__::InputMergeParGlobSpawn(_, a0, a1, a2, a3) => {
                     par_merge::merge_par_glob_spawn(worker, a0, a1, a2, a3);
-                    *lock = None;
-                }
-                __Frame__::InputSpawnSortUnsafe(_, a0, a1, a2) => {
-                    par_merge::spawn_sort_unsafe(worker, a0, a1, a2);
-                    *lock = None;
-                }
-                __Frame__::InputSpawnMergeUnsafe(_, a0, a1, a2, a3) => {
-                    par_merge::spawn_merge_unsafe(worker, a0, a1, a2, a3);
                     *lock = None;
                 }
                 _ => panic!("WRONG STOLEN WORK FRAME!"),

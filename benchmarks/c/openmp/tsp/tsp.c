@@ -58,7 +58,40 @@ void tsp_omp(int hops, int last, uint128 path, int length) {
     }
 
     // try all cities not on the path, in "nearest-city-first" order
-    for (int i = ntowns-1; i >= 0 ; i--) { //for (int i = 0; i < ntowns ; i++) { //
+    for (int i = ntowns-1; i >= 0 ; i--) {
+        const int city = DISTANCE->to_city[last * ntowns + i];
+        const uint128 city_bit = (uint128)1 << city;
+
+        if (city != last && (path & city_bit) == 0) {
+            const int dist = DISTANCE->dist[last * ntowns + i];            
+            const uint128 new_path = path | city_bit;
+            #pragma omp task firstprivate(hops, city, new_path, length, dist)
+            tsp_omp(hops + 1, city, new_path, length + dist);
+        }
+    }
+    #pragma omp taskwait
+}
+
+void tsp_omp_single(int hops, int last, uint128 path, int length) {
+    const int ntowns = distance_num_towns(DISTANCE);
+
+    if (length + DISTANCE->lower_bounds[ntowns - hops] >= MINIMUM) {
+        // stop searching, this path is too long...
+        return;
+    } else if (hops == ntowns) {
+        // found a full route better than current best route
+        atomic_store_explicit(&MINIMUM, length, memory_order_relaxed);
+        // path_print(&path);
+        return;
+    }
+
+    if (hops > THRESHOLD) {
+        tsp(hops, last, path, length);
+        return;
+    }
+
+    // try all cities not on the path
+    for (int i = 0; i < ntowns ; i++) {
         const int city = DISTANCE->to_city[last * ntowns + i];
         const uint128 city_bit = (uint128)1 << city;
 
@@ -91,14 +124,28 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(app, "omp") == 0) {
         int workers = omp_get_max_threads();
-        #pragma omp parallel
-        {
-            #pragma omp single
+
+        if (workers == 1) {
+            #pragma omp parallel
             {
-                ctimer_start(&t);
-                tsp_omp(1, 0, path, 0);
-                ctimer_stop(&t);
-                ctimer_measure(&t);
+                #pragma omp single
+                {
+                    ctimer_start(&t);
+                    tsp_omp_single(1, 0, path, 0);
+                    ctimer_stop(&t);
+                    ctimer_measure(&t);
+                }
+            }
+        } else {
+            #pragma omp parallel
+            {
+                #pragma omp single
+                {
+                    ctimer_start(&t);
+                    tsp_omp(1, 0, path, 0);
+                    ctimer_stop(&t);
+                    ctimer_measure(&t);
+                }
             }
         }
         int result = atomic_load(&MINIMUM);

@@ -98,10 +98,10 @@ fn main() {
 
     let arr = gen_vec(n, seed);
 
-    if app.eq("velvet_unsafe") {
+    if app.eq("velvet") {
         #[cfg(not(feature = "test_direct_rec"))]
         velvet_unsafe_main(arr, seed);
-    } else if app.eq("par_seq_unsafe") {
+    } else if app.eq("par_seq") {
         // pin thread!
         let core_ids = core_affinity::get_core_ids().unwrap();
         let res = core_affinity::set_for_current(core_ids[0]);
@@ -109,7 +109,7 @@ fn main() {
             eprintln!("Could not pin Root thread id continuing without pinning...");
         } 
         par_unsafe_main(arr, seed);
-    } else if app.eq("test_direct_unsafe") {
+    } else if app.eq("test_direct") {
         #[cfg(feature = "test_direct_rec")]
         {
             if args.len() < 5 {

@@ -127,12 +127,8 @@ fn velvet_main(ntowns: usize, seed: u64) {
 
 #[cfg(feature = "rayon")]
 fn rayon_main(ntowns: usize, seed: u64, num_threads:usize) {
-    #[cfg(not(feature = "pin_rayon"))]
-    rayon::ThreadPoolBuilder::new().num_threads(num_threads).build_global().unwrap();
-    #[cfg(feature = "pin_rayon")]
-    {
-        let cores = core_affinity::get_core_ids().unwrap();
-        rayon::ThreadPoolBuilder::new()
+    let cores = core_affinity::get_core_ids().unwrap();
+    rayon::ThreadPoolBuilder::new()
         .num_threads(num_threads)
         .start_handler(move |index| {
             let core_id = cores[index % cores.len()];
@@ -143,7 +139,6 @@ fn rayon_main(ntowns: usize, seed: u64, num_threads:usize) {
         })
         .build_global()
         .unwrap();
-    }
 
     let path: u128 = 1u128; 
     let length = 0;
@@ -152,8 +147,6 @@ fn rayon_main(ntowns: usize, seed: u64, num_threads:usize) {
     tsp_rayon(1, 0, path, length);
     let end = start.elapsed();
 
-    let _version = 11;
-    #[cfg(feature = "pin_rayon")]
     let _version = 1;
     
     println!("{},{},{},{},{},{}", _version, num_threads, ntowns, seed, THRESHOLD, end.as_secs_f32());

@@ -1,6 +1,6 @@
-CC = clang
+CC = ${OPENCILK_HOME}/bin/clang
 
-CFLAGS = -O3 -fopencilk
+CFLAGS = -L${OPENCILK_HOME}/lib -L${OPENCILK_HOME}/lib64 -fopencilk -O3 -fopencilk
 LDFLAGS = -lm -lpthread -ldl
 
 RUST_LIB_DIR = ../../sort_rs/target/release

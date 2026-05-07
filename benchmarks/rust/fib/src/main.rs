@@ -70,7 +70,7 @@ fn main() {
 #[velvet_main(fib)]
 fn velvet_main(n: u64) {
     #[cfg(feature = "test_no_thresh")]
-    println!("TESTING NO THRESHOLD VERSION!");
+    eprintln!("TESTING NO THRESHOLD VERSION!");
     let start = Instant::now();
     let res = fib(n);
     let end = start.elapsed();
@@ -85,9 +85,11 @@ fn velvet_main(n: u64) {
    };
 
    #[cfg(not(feature = "test_no_thresh"))]
-    let thresh = THRESHOLD;
-    #[cfg(feature = "test_no_thresh")]
-    let thresh = -1;
+   let thresh = THRESHOLD;
+   #[cfg(feature = "test_no_thresh")]
+   let thresh = -1;
+   #[cfg(feature = "test_no_thresh")]
+   let version = 3;
 
     println!("{},{},{},{},{}", version, velvet_get_num_workers(), n, thresh, end.as_secs_f32());
 }
@@ -159,12 +161,15 @@ fn test_direct_recursion(n: u64, num_workers: usize) {
     let end = start.elapsed();
     eprintln!("res = {}", res);
 
+    let version = 7;
     #[cfg(not(feature = "test_no_thresh"))]
     let thresh = THRESHOLD;
     #[cfg(feature = "test_no_thresh")]
     let thresh = -1;
+    #[cfg(feature = "test_no_thresh")]
+    let version = 8;
     
-    println!("7,{},{},{},{}", num_workers, n, thresh, end.as_secs_f32());
+    println!("{},{},{},{},{}", version, num_workers, n, thresh, end.as_secs_f32());
 }
 
 #[cfg(feature = "test_direct_rec")]

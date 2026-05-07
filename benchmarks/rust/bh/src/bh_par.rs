@@ -360,7 +360,7 @@ pub(crate) fn test_direct_recursion(input_file: &str, _output_file: &str, num_it
         let root = Arc::new(tree);
         duration_tree += start_tree.elapsed();
         let start_update_forces = Instant::now();
-        root.traverse_spawn(&mut __root__worker__, root.clone());
+        root.clone().traverse_spawn(&mut __root__worker__, root);
         duration_update_forces += start_update_forces.elapsed();
         let start_update_bodies = Instant::now();
         for body in BODIES.get().unwrap().iter() {
