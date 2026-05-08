@@ -34,10 +34,24 @@ if [ "$HAVE_OPENCILK" = "false" ]; then
 fi
 
 # decide whether to run 'full' or 'reduced' setup
-RUN_MODE="${1:-reduced}"
-PHYS_CORES=$(lscpu | grep "^Core(s) per socket:" | awk '{print $NF}')
-SOCKETS=$(lscpu | grep "^Socket(s):" | awk '{print $NF}')
-PHYS_CORES=$((PHYS_CORES * SOCKETS))
+RUN_MODE="reduced"
+CORES_OVERRIDE=""
+for arg in "$@"; do
+    if [ "$arg" = "full" ]; then
+        RUN_MODE="full"
+    elif [[ "$arg" =~ ^--cores=([0-9]+)$ ]]; then
+        CORES_OVERRIDE="${BASH_REMATCH[1]}"
+    fi
+done
+
+if [ -n "$CORES_OVERRIDE" ]; then
+    PHYS_CORES="$CORES_OVERRIDE"
+else
+    PHYS_CORES=$(lscpu | grep "^Core(s) per socket:" | awk '{print $NF}')
+    SOCKETS=$(lscpu | grep "^Socket(s):" | awk '{print $NF}')
+    PHYS_CORES=$((PHYS_CORES * SOCKETS))
+fi
+
 if [ "$RUN_MODE" = "full" ]; then
     MAX_CORES=$PHYS_CORES
 else

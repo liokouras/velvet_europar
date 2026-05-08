@@ -33,3 +33,9 @@ if [ "$HAVE_PYTHON_DEPS" = "false" ]; then
 else
     echo "VERIFIED: PYTHON"
 fi
+if ! command -v lscpu &>/dev/null; then
+    echo "WARNING: lscpu not found. This is required to auto-detect the number of cores. Please specify number of cores to run_exp.sh with --cores=N"
+fi
+if ! command -v wget &>/dev/null; then
+    echo "WARNING: wget not found, Barnes-Hut data cannot be downloaded automatically."
+fi
