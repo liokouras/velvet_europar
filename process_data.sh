@@ -10,4 +10,4 @@ cd data_processing
 
 mkdir -p figs
 
-python3 scripts/main.py all data/
+python3 scripts/main.py all data/ > processing_output.txt
