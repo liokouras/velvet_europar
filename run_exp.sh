@@ -47,25 +47,25 @@ echo "Running $RUN_MODE setup with $MAX_CORES cores"
 
 
 # call app-specific scripts with same out-dir and relevant dep info
-# time bash adapint.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
+bash adapint.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
 
-# time bash bh.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
+bash bh.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
 
-# time bash fib.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$MAX_CORES" "$RUN_MODE"
+bash fib.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$MAX_CORES" "$RUN_MODE"
 
-# time bash matmul.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
+bash matmul.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
 
-# time bash nqueens.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
+bash nqueens.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
 
-time bash sort.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
+bash sort.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
 
-time bash tsp.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
+bash tsp.sh "$OUT_DIR" "$DUMP_DIR" "$HAVE_RUST" "$HAVE_CLANG_OMP" "$HAVE_OPENCILK" "$MAX_CORES" "$RUN_MODE"
 
 # do the stat runs
 if [ "$HAVE_RUST" = "true" ]; then
     STATS_DIR="${OUT_DIR}/stats"
     mkdir -p "$STATS_DIR"
-    time bash stats.sh "$STATS_DIR"
+    bash stats.sh "$STATS_DIR"
 fi
 
 # process data
@@ -79,11 +79,14 @@ elif [ "$HAVE_RUST" = "false" ]; then
     echo "WARNING: Rust experiments were not run, so there is no data to process..."
 elif [ "$HAVE_CLANG_OMP" = "false" -a "$HAVE_OPENCILK" = "false" ]; then
     echo "WARNING: both C-versions were skipped, only plotting Rust data (tables & Fig. 1)"
-    python ../../data_processing/scripts/main.py rust-only "$OUT_DIR"
+    python ../../data_processing/scripts/main.py rust-only "$OUT_DIR" > ../../processing_output.txt
+    echo "Processing output printed to processing_output.txt"
 elif [ "$HAVE_CLANG_OMP" = "false" -o "$HAVE_OPENCILK" = "false" ]; then
     echo "WARNING: at least one C-version was skipped, there will be gaps in the C-comparison figure (Fig. 2)"
-    python ../../data_processing/scripts/main.py all "$OUT_DIR"
+    python ../../data_processing/scripts/main.py all "$OUT_DIR" > ../../processing_output.txt
+    echo "Processing output printed to processing_output.txt"
 else
     echo "Processing data...."
-    python ../../data_processing/scripts/main.py all "$OUT_DIR"
+    python ../../data_processing/scripts/main.py all "$OUT_DIR" > ../../processing_output.txt
+    echo "Processing output printed to processing_output.txt"
 fi

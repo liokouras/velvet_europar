@@ -16,20 +16,20 @@ test -x "$OPENCILK_HOME/bin/clang" && \
 if [ "$HAVE_RUST" = "false" ]; then
     echo "WARNING: Rust and Cargo not found. These are necessary to run the fundamental benchmarks."
 else
-    echo "RUST IS VERIFIED"
+    echo "VERIFIED: RUST"
 fi
 if [ "$HAVE_CLANG_OMP" = "false" ]; then
     echo "WARNING: clang with OpenMP not found. This is necessary for the comparison with OpenMP. Will be skipped..."
 else
-    echo "OPENMP IS VERIFIED"
+    echo "VERIFIED: OPENMP"
 fi
 if [ "$HAVE_OPENCILK" = "false" ]; then
     echo "WARNING: OpenCilk not found. This is necessary for the comparison with Cilk. Will be skipped..."
 else
-    echo "CILK IS VERIFIED"
+    echo "VERIFIED: CILK"
 fi
 if [ "$HAVE_PYTHON_DEPS" = "false" ]; then
     echo "WARNING: missing Python dependencies (numpy, matplotlib, and/or pandas), plotting will be skipped"
 else
-    echo "PYTHON IS VERIFIED"
+    echo "VERIFIED: PYTHON"
 fi

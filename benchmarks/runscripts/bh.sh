@@ -13,27 +13,29 @@ THREADS_FULL=(1 2 4 8 16 32 48 64 80 96 112 128)
 ITERS_FULL=(1 1 1 1 1 1)
 ITERS_REDUCED=(1 1 1)
 
+RELEASE_TAG="v1.0-artifact"
+REPO="liokouras/velvet_europar"
+
 if [ "$RUN_MODE" = "full" ]; then
     ACTIVE_THREADS=("${THREADS_FULL[@]}")
     ACTIVE_ITERS=("${ITERS_FULL[@]}")
-    #TODO adjust...
     DATA="three_plummers_4M_wider"
-    INPUT="/local/badia/data/$DATA.txt"
-    OUTPUT="/local/badia/data/$DATA.txt"
-    ITERS=5
 else
     for t in "${THREADS_FULL[@]}"; do
-        if [ "$t" -le "$6" ]; then
+        if [ "$t" -le "$MAX_CORES" ]; then
             ACTIVE_THREADS+=("$t")
         fi
     done
     ACTIVE_ITERS=("${ITERS_REDUCED[@]}")
-    #TODO adjust...
     DATA="two_plummers_1M"
-    INPUT="/local/badia/data/$DATA.txt"
-    OUTPUT="/local/badia/data/$DATA.txt"
-    ITERS=5
 fi
+
+if [ ! -f ../data/${DATA}.txt ]; then
+    wget -O ../data/${DATA}.txt https://github.com/$REPO/releases/download/$RELEASE_TAG/$DATA.txt
+fi
+INPUT="$(realpath "../data/${DATA}.txt")"
+OUTPUT="$(realpath "../data/")"
+ITERS=5
 
 echo "BH benchmark. Saving logs to $OUT"
 echo "version,num_workers,bucket_size,spawn_threshold,total_time,tree_time,forces_time,bodies_time" > "$OUT"

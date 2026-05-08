@@ -95,12 +95,12 @@ if [ "$HAVE_RUST" = "true" ]; then
 fi
 
 if [ "$HAVE_CLANG_OMP" = "true" ]; then
-    cd ../c/
-
     # ensure Rust sort is compiled
-    cd sort_rs
+    cd ../c/sort_rs
     cargo build --release
-    cd ..
+    cd - > /dev/null
+
+    cd ../c/
 
     make -C ./openmp/sort/
 
@@ -125,12 +125,12 @@ if [ "$HAVE_CLANG_OMP" = "true" ]; then
 fi
 
 if [ "$HAVE_OPENCILK" = "true" ]; then
-    cd ../c/
-
     # ensure Rust sort is compiled
-    cd sort_rs
+    cd ../c/sort_rs
     cargo build --release
-    cd ..
+    cd - > /dev/null
+
+    cd ../c/
 
     make -C ./cilk/sort/
 
