@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python -c "import numpy, matplotlib, pandas" &>/dev/null 2>&1 && HAVE_PYTHON_DEPS=true || HAVE_PYTHON_DEPS=false
+python3 -c "import numpy, matplotlib, pandas" &>/dev/null 2>&1 && HAVE_PYTHON_DEPS=true || HAVE_PYTHON_DEPS=false
 
 if [ "$HAVE_PYTHON_DEPS" = "false" ]; then
     echo "WARNING: missing Python dependencies (numpy, matplotlib, and/or pandas),  cannot do data processing"
@@ -10,4 +10,4 @@ cd data_processing
 
 mkdir -p figs
 
-python scripts/main.py all data/
+python3 scripts/main.py all data/

@@ -6,7 +6,7 @@ HAVE_CLANG_OMP=false
 HAVE_OPENCILK=false
 HAVE_PYTHON_DEPS=false
 
-python -c "import numpy, matplotlib, pandas" &>/dev/null 2>&1 && HAVE_PYTHON_DEPS=true
+python3 -c "import numpy, matplotlib, pandas" &>/dev/null 2>&1 && HAVE_PYTHON_DEPS=true
 
 command -v rustc &>/dev/null && command -v cargo &>/dev/null && HAVE_RUST=true
 command -v clang &>/dev/null && echo | clang -fopenmp -x c -c -o /dev/null - &>/dev/null 2>&1 && HAVE_CLANG_OMP=true

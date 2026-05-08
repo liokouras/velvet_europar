@@ -69,7 +69,7 @@ if [ "$HAVE_RUST" = "true" ]; then
 fi
 
 # process data
-python -c "import numpy, matplotlib, pandas" &>/dev/null 2>&1 && HAVE_PYTHON_DEPS=true || HAVE_PYTHON_DEPS=false
+python3 -c "import numpy, matplotlib, pandas" &>/dev/null 2>&1 && HAVE_PYTHON_DEPS=true || HAVE_PYTHON_DEPS=false
 
 mkdir -p ../../data_processing/figs
 
@@ -79,14 +79,14 @@ elif [ "$HAVE_RUST" = "false" ]; then
     echo "WARNING: Rust experiments were not run, so there is no data to process..."
 elif [ "$HAVE_CLANG_OMP" = "false" -a "$HAVE_OPENCILK" = "false" ]; then
     echo "WARNING: both C-versions were skipped, only plotting Rust data (tables & Fig. 1)"
-    python ../../data_processing/scripts/main.py rust-only "$OUT_DIR" > ../../data_processing/processing_output.txt
+    python3 ../../data_processing/scripts/main.py rust-only "$OUT_DIR" > ../../data_processing/processing_output.txt
     echo "Processing output printed to data_processing/processing_output.txt"
 elif [ "$HAVE_CLANG_OMP" = "false" -o "$HAVE_OPENCILK" = "false" ]; then
     echo "WARNING: at least one C-version was skipped, there will be gaps in the C-comparison figure (Fig. 2)"
-    python ../../data_processing/scripts/main.py all "$OUT_DIR" > ../../data_processing/processing_output.txt
+    python3 ../../data_processing/scripts/main.py all "$OUT_DIR" > ../../data_processing/processing_output.txt
     echo "Processing output printed to data_processing/processing_output.txt"
 else
     echo "Processing data...."
-    python ../../data_processing/scripts/main.py all "$OUT_DIR" > ../../data_processing/processing_output.txt
+    python3 ../../data_processing/scripts/main.py all "$OUT_DIR" > ../../data_processing/processing_output.txt
     echo "Processing output printed to data_processing/processing_output.txt"
 fi
